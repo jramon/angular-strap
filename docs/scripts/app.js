@@ -2,7 +2,7 @@
 // bower install angular#~1.3 angular-route#~1.3 angular-animate#~1.3
 // bower install angular#~1.4 angular-route#~1.4 angular-animate#~1.4
 
-angular.module('mgcrea.ngStrapDocs', ['mgcrea.ngStrap', 'mgcrea.ngPlunkr', 'ngRoute', 'ngAnimate'])
+angular.module('mgcrea.ngStrapDocs', ['mgcrea.ngStrap', 'mgcrea.ngPlunkr', 'ngRoute', 'ngAnimate', 'deathstar'])
 
 .constant('version', 'v2.3.2')
 .constant('ngVersion', angular.version.full)

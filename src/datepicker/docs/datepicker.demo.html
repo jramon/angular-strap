@@ -32,7 +32,9 @@ $scope.untilDate = {{untilDate}}; // &lt;- {{ getType('untilDate') }}
       <!-- Basic example -->
       <div class="form-group" ng-class="{'has-error': datepickerForm.date.$invalid}">
         <label class="control-label"><i class="fa fa-calendar"></i> Date <small>(as date)</small></label>
-        <input type="text" class="form-control" ng-model="selectedDate" name="date" bs-datepicker>
+        <dsDatepicker>
+          <input type="text" class="form-control" ng-model="selectedDate" name="date" bs-datepicker>
+        </dsDatepicker>
       </div>
       <!-- Custom example -->
       <div class="form-group" ng-class="{'has-error': datepickerForm.date2.$invalid}">

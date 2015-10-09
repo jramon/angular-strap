@@ -1,6 +1,6 @@
 /**
  * angular-strap
- * @version v2.3.3 - 2015-09-24
+ * @version v2.3.3 - 2015-10-05
  * @link http://mgcrea.github.io/angular-strap
  * @author Olivier Louvignes <olivier@mg-crea.com> (https://github.com/mgcrea)
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -26,7 +26,7 @@
       comparator: '',
       trimValue: true
     };
-    this.$get = ["$window", "$rootScope", "$bsTooltip", "$$bsRAF", "$timeout", function($window, $rootScope, $tooltip, $$rAF, $timeout) {
+    this.$get = ["$window", "$rootScope", "$bsTooltip", "$$rAF", "$timeout", function($window, $rootScope, $tooltip, $$rAF, $timeout) {
       var bodyEl = angular.element($window.document.body);
       function TypeaheadFactory(element, controller, config) {
         var $typeahead = {};
@@ -243,7 +243,7 @@
         padding: 0
       }
     };
-    this.$get = ["$window", "$rootScope", "$bsCompiler", "$q", "$templateCache", "$http", "$animate", "$sce", "bsDimensions", "$$bsRAF", "$timeout", function($window, $rootScope, $bsCompiler, $q, $templateCache, $http, $animate, $sce, dimensions, $$rAF, $timeout) {
+    this.$get = ["$window", "$rootScope", "$bsCompiler", "$q", "$templateCache", "$http", "$animate", "$sce", "bsDimensions", "$$rAF", "$timeout", function($window, $rootScope, $bsCompiler, $q, $templateCache, $http, $animate, $sce, dimensions, $$rAF, $timeout) {
       var trim = String.prototype.trim;
       var isTouch = 'createTouch' in $window.document;
       var htmlReplaceRegExp = /ng-bind="/gi;
@@ -725,7 +725,7 @@
       }
       return TooltipFactory;
     } ];
-  }).directive('bsTooltip', ["$window", "$location", "$sce", "$bsTooltip", "$$bsRAF", function($window, $location, $sce, $tooltip, $$rAF) {
+  }).directive('bsTooltip', ["$window", "$location", "$sce", "$bsTooltip", "$$rAF", function($window, $location, $sce, $tooltip, $$rAF) {
     return {
       restrict: 'EAC',
       scope: true,
@@ -2206,7 +2206,7 @@
       }
     };
   } ]);
-  angular.version.minor < 3 && angular.version.dot < 14 && angular.module('ng').factory('$$bsRAF', ["$window", "$timeout", function($window, $timeout) {
+  angular.version.minor < 3 && angular.version.dot < 14 && angular.module('ng').factory('$$rAF', ["$window", "$timeout", function($window, $timeout) {
     var requestAnimationFrame = $window.requestAnimationFrame || $window.webkitRequestAnimationFrame || $window.mozRequestAnimationFrame;
     var cancelAnimationFrame = $window.cancelAnimationFrame || $window.webkitCancelAnimationFrame || $window.mozCancelAnimationFrame || $window.webkitCancelRequestAnimationFrame;
     var rafSupported = !!requestAnimationFrame;
@@ -3433,6 +3433,70 @@
       };
     } ];
   });
+  angular.module('mgcrea.ngStrap.aside', [ 'mgcrea.ngStrap.modal' ]).provider('$bsAside', function() {
+    var defaults = this.defaults = {
+      animation: 'am-fade-and-slide-right',
+      prefixClass: 'aside',
+      prefixEvent: 'aside',
+      placement: 'right',
+      templateUrl: 'aside/aside.tpl.html',
+      contentTemplate: false,
+      container: false,
+      element: null,
+      backdrop: true,
+      keyboard: true,
+      html: false,
+      show: true
+    };
+    this.$get = ["$bsModal", function($modal) {
+      function AsideFactory(config) {
+        var $aside = {};
+        var options = angular.extend({}, defaults, config);
+        $aside = $modal(options);
+        return $aside;
+      }
+      return AsideFactory;
+    } ];
+  }).directive('bsAside', ["$window", "$sce", "$bsAside", function($window, $sce, $aside) {
+    var requestAnimationFrame = $window.requestAnimationFrame || $window.setTimeout;
+    return {
+      restrict: 'EAC',
+      scope: true,
+      link: function postLink(scope, element, attr, transclusion) {
+        var options = {
+          scope: scope,
+          element: element,
+          show: false
+        };
+        angular.forEach([ 'template', 'templateUrl', 'controller', 'controllerAs', 'contentTemplate', 'placement', 'backdrop', 'keyboard', 'html', 'container', 'animation' ], function(key) {
+          if (angular.isDefined(attr[key])) options[key] = attr[key];
+        });
+        var falseValueRegExp = /^(false|0|)$/i;
+        angular.forEach([ 'backdrop', 'keyboard', 'html', 'container' ], function(key) {
+          if (angular.isDefined(attr[key]) && falseValueRegExp.test(attr[key])) options[key] = false;
+        });
+        angular.forEach([ 'title', 'content' ], function(key) {
+          attr[key] && attr.$observe(key, function(newValue, oldValue) {
+            scope[key] = $sce.trustAsHtml(newValue);
+          });
+        });
+        attr.bsAside && scope.$watch(attr.bsAside, function(newValue, oldValue) {
+          if (angular.isObject(newValue)) {
+            angular.extend(scope, newValue);
+          } else {
+            scope.content = newValue;
+          }
+        }, true);
+        var aside = $aside(options);
+        element.on(attr.trigger || 'click', aside.toggle);
+        scope.$on('$destroy', function() {
+          if (aside) aside.destroy();
+          options = null;
+          aside = null;
+        });
+      }
+    };
+  } ]);
   angular.module('mgcrea.ngStrap.collapse', []).provider('$bsCollapse', function() {
     var defaults = this.defaults = {
       animation: 'am-collapse',
@@ -3636,7 +3700,7 @@
         });
       }
     };
-  }).directive('bsCheckbox', ["$bsButton", "$$bsRAF", function($button, $$rAF) {
+  }).directive('bsCheckbox', ["$bsButton", "$$rAF", function($button, $$rAF) {
     var defaults = $button.defaults;
     var constantValueRegExp = /^(true|false|\d+)$/;
     return {
@@ -3699,7 +3763,7 @@
         });
       }
     };
-  }).directive('bsRadio', ["$bsButton", "$$bsRAF", function($button, $$rAF) {
+  }).directive('bsRadio', ["$bsButton", "$$rAF", function($button, $$rAF) {
     var defaults = $button.defaults;
     var constantValueRegExp = /^(true|false|\d+)$/;
     return {
@@ -3726,70 +3790,6 @@
             controller.$setViewValue(value);
             controller.$render();
           });
-        });
-      }
-    };
-  } ]);
-  angular.module('mgcrea.ngStrap.aside', [ 'mgcrea.ngStrap.modal' ]).provider('$bsAside', function() {
-    var defaults = this.defaults = {
-      animation: 'am-fade-and-slide-right',
-      prefixClass: 'aside',
-      prefixEvent: 'aside',
-      placement: 'right',
-      templateUrl: 'aside/aside.tpl.html',
-      contentTemplate: false,
-      container: false,
-      element: null,
-      backdrop: true,
-      keyboard: true,
-      html: false,
-      show: true
-    };
-    this.$get = ["$bsModal", function($modal) {
-      function AsideFactory(config) {
-        var $aside = {};
-        var options = angular.extend({}, defaults, config);
-        $aside = $modal(options);
-        return $aside;
-      }
-      return AsideFactory;
-    } ];
-  }).directive('bsAside', ["$window", "$sce", "$bsAside", function($window, $sce, $aside) {
-    var requestAnimationFrame = $window.requestAnimationFrame || $window.setTimeout;
-    return {
-      restrict: 'EAC',
-      scope: true,
-      link: function postLink(scope, element, attr, transclusion) {
-        var options = {
-          scope: scope,
-          element: element,
-          show: false
-        };
-        angular.forEach([ 'template', 'templateUrl', 'controller', 'controllerAs', 'contentTemplate', 'placement', 'backdrop', 'keyboard', 'html', 'container', 'animation' ], function(key) {
-          if (angular.isDefined(attr[key])) options[key] = attr[key];
-        });
-        var falseValueRegExp = /^(false|0|)$/i;
-        angular.forEach([ 'backdrop', 'keyboard', 'html', 'container' ], function(key) {
-          if (angular.isDefined(attr[key]) && falseValueRegExp.test(attr[key])) options[key] = false;
-        });
-        angular.forEach([ 'title', 'content' ], function(key) {
-          attr[key] && attr.$observe(key, function(newValue, oldValue) {
-            scope[key] = $sce.trustAsHtml(newValue);
-          });
-        });
-        attr.bsAside && scope.$watch(attr.bsAside, function(newValue, oldValue) {
-          if (angular.isObject(newValue)) {
-            angular.extend(scope, newValue);
-          } else {
-            scope.content = newValue;
-          }
-        }, true);
-        var aside = $aside(options);
-        element.on(attr.trigger || 'click', aside.toggle);
-        scope.$on('$destroy', function() {
-          if (aside) aside.destroy();
-          options = null;
-          aside = null;
         });
       }
     };
